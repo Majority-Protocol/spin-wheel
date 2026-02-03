@@ -73,7 +73,6 @@ export const SpinWheel = forwardRef<SpinWheelRef, SpinWheelProps>(
           zIndex={10}
           width={0}
           height={0}
-          // @ts-expect-error - React Native style
           borderLeftWidth={15}
           borderLeftColor="transparent"
           borderRightWidth={15}
