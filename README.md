@@ -10,88 +10,155 @@ npm install @majority-protocol/spin-wheel
 
 ### Peer Dependencies
 
-This package requires the following peer dependencies:
-
 ```bash
 npm install react react-native react-native-reanimated react-native-svg tamagui
 ```
 
-## Usage
+## Quick Start
 
 ```tsx
-import { useRef } from "react";
-import { SpinWheel, SpinWheelRef, canSpinToday, getResultTier, TIER_CONFIG } from "@majority-protocol/spin-wheel";
+import { SpinScreen } from "@majority-protocol/spin-wheel";
 
-function MySpinScreen() {
-  const wheelRef = useRef<SpinWheelRef>(null);
-
-  const handleSpin = () => {
-    wheelRef.current?.spin();
-  };
-
-  const handleSpinComplete = (value: number) => {
-    const tier = getResultTier(value);
-    const config = TIER_CONFIG[tier];
-    console.log(`Won ${value} points! Tier: ${config.label}`);
-  };
+export default function Spin() {
+  const router = useRouter();
+  const { lastSpinDate, spinHistory, recordSpin, resetSpin } = useLocalStore();
 
   return (
-    <View>
-      <SpinWheel
-        ref={wheelRef}
-        onSpinComplete={handleSpinComplete}
-        size={280}
-      />
-      <Button onPress={handleSpin}>SPIN!</Button>
-    </View>
+    <SpinScreen
+      onBack={() => router.back()}
+      lastSpinDate={lastSpinDate}
+      spinHistory={spinHistory}
+      onRecordSpin={recordSpin}
+      onResetSpin={resetSpin}
+      showDevReset={__DEV__}
+    />
   );
 }
 ```
 
-## API
+## Components
 
-### SpinWheel Component
+### SpinScreen
 
-| Prop | Type | Default | Description |
-|------|------|---------|-------------|
-| `onSpinComplete` | `(value: number) => void` | required | Callback when spin completes |
-| `size` | `number` | `280` | Wheel diameter in pixels |
+Full-screen spin wheel experience with animations, result display, and history.
 
-### SpinWheelRef
-
-```ts
-type SpinWheelRef = {
-  spin: () => void;
-};
+```tsx
+<SpinScreen
+  onBack={() => router.back()}
+  lastSpinDate={lastSpinDate}
+  spinHistory={spinHistory}
+  onRecordSpin={(value) => recordSpin(value)}
+  onResetSpin={() => resetSpin()}
+  onPlaySound={() => playWheelSound()}
+  showDevReset={__DEV__}
+  BackIcon={<MyBackIcon />}
+/>
 ```
 
-### Utility Functions
+| Prop | Type | Required | Description |
+|------|------|----------|-------------|
+| `onBack` | `() => void` | Yes | Navigate back handler |
+| `lastSpinDate` | `string \| null` | Yes | Last spin date ISO string |
+| `spinHistory` | `SpinHistoryEntry[]` | Yes | Array of recent spins |
+| `onRecordSpin` | `(value: number) => void` | Yes | Record spin result |
+| `onResetSpin` | `() => void` | No | Reset spin state (dev) |
+| `onPlaySound` | `() => void` | No | Play sound on spin |
+| `showDevReset` | `boolean` | No | Show dev reset button |
+| `BackIcon` | `React.ReactNode` | No | Custom back icon |
 
-- `canSpinToday(lastSpinDate: string | null): boolean` - Check if user can spin today
-- `getResultTier(value: number): ResultTier` - Get tier based on value (legendary, epic, rare, uncommon, common)
-- `getWeightedRandomValue(): number` - Get a weighted random value for testing
-- `formatSpinDate(timestamp: string): string` - Format a spin timestamp for display
+### DailySpinBanner
 
-### Constants
+Entry banner for games tab with pulse animation when spin is available.
 
-- `WHEEL_VALUES` - Array of values on the wheel segments
-- `TIER_CONFIG` - Configuration for each tier (colors, label)
-- `COLORS` - Color palette used by the wheel
+```tsx
+<DailySpinBanner
+  onPress={() => router.push("/spin")}
+  lastSpinDate={lastSpinDate}
+  WheelIcon={<MyWheelIcon />}
+  ArrowIcon={<MyArrowIcon />}
+/>
+```
+
+| Prop | Type | Required | Description |
+|------|------|----------|-------------|
+| `onPress` | `() => void` | Yes | Navigate to spin screen |
+| `lastSpinDate` | `string \| null` | Yes | Last spin date ISO string |
+| `WheelIcon` | `React.ReactNode` | No | Custom wheel icon |
+| `ArrowIcon` | `React.ReactNode` | No | Custom arrow icon |
+
+### SpinWheel
+
+Core wheel component for custom implementations.
+
+```tsx
+const wheelRef = useRef<SpinWheelRef>(null);
+
+<SpinWheel
+  ref={wheelRef}
+  onSpinComplete={(value) => console.log(`Won ${value}!`)}
+  size={280}
+/>
+
+// Trigger spin
+wheelRef.current?.spin();
+```
+
+### SpinResult
+
+Animated result display component.
+
+```tsx
+<SpinResult value={100} visible={showResult} />
+```
+
+## Utilities
+
+```tsx
+import {
+  canSpinToday,
+  getResultTier,
+  TIER_CONFIG,
+} from "@majority-protocol/spin-wheel";
+
+// Check if user can spin
+const canSpin = canSpinToday(lastSpinDate);
+
+// Get tier for a value
+const tier = getResultTier(500); // "legendary"
+const config = TIER_CONFIG[tier]; // { colors: [...], label: "LEGENDARY" }
+```
+
+## State Management
+
+The package doesn't include state management. You provide spin state via props:
+
+```tsx
+// Example with Zustand
+const useSpinStore = create((set) => ({
+  lastSpinDate: null,
+  spinHistory: [],
+  recordSpin: (value) =>
+    set((state) => ({
+      lastSpinDate: new Date().toISOString(),
+      spinHistory: [
+        { value, timestamp: new Date().toISOString() },
+        ...state.spinHistory,
+      ].slice(0, 10),
+    })),
+  resetSpin: () => set({ lastSpinDate: null }),
+}));
+```
 
 ## Wheel Values & Probabilities
 
-The wheel has 30 segments with values ranging from 1 to 1000. Higher values are rarer:
-
-| Value | Probability |
-|-------|-------------|
-| 1-2 | ~14% each |
-| 3-5 | ~10-12% each |
-| 6-10 | ~5-8% each |
-| 20 | ~4% |
-| 50 | ~2% |
-| 100 | ~1.5% |
-| 500 | ~1% |
-| 1000 | ~0.5% |
+| Value | Tier | Probability |
+|-------|------|-------------|
+| 1-10 | Common | ~5-14% each |
+| 20 | Uncommon | ~4% |
+| 50 | Rare | ~2% |
+| 100 | Epic | ~1.5% |
+| 500 | Legendary | ~1% |
+| 1000 | Legendary | ~0.5% |
 
 ## License
 

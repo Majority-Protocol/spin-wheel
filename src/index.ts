@@ -1,5 +1,8 @@
 // Components
 export { SpinWheel } from "./SpinWheel";
+export { SpinScreen } from "./SpinScreen";
+export { SpinResult } from "./SpinResult";
+export { DailySpinBanner } from "./DailySpinBanner";
 
 // Constants
 export {
@@ -27,6 +30,9 @@ export {
 export type {
   SpinWheelRef,
   SpinWheelProps,
+  SpinScreenProps,
+  SpinResultProps,
+  DailySpinBannerProps,
   ResultTier,
   SpinHistoryEntry,
 } from "./types";

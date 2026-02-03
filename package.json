@@ -1,6 +1,6 @@
 {
   "name": "@majority-protocol/spin-wheel",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Daily spin wheel mini-game for Majority apps",
   "main": "dist/index.js",
   "module": "dist/index.mjs",
