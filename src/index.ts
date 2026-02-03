@@ -37,7 +37,7 @@ export const spinWheelHtml = `
             padding: 16px;
             padding-top: 55px;
             background: rgba(0,0,0,0.6);
-            z-index: 10;
+            z-index: 100;
             text-align: center;
         }
         .header-label {
@@ -90,7 +90,7 @@ export const spinWheelHtml = `
             border-left: 18px solid transparent;
             border-right: 18px solid transparent;
             border-top: 35px solid #E53935;
-            z-index: 10;
+            z-index: 5;
             filter: drop-shadow(0 4px 8px rgba(229, 57, 53, 0.5));
         }
         #spinBtn {
