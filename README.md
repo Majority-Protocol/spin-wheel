@@ -106,6 +106,32 @@ npm run build    # Build the package
 npm run dev      # Watch mode (rebuilds on changes)
 ```
 
+## Publishing to npm
+
+When ready to release a new version:
+
+1. **Update version** in `package.json`
+2. **Build and publish:**
+   ```bash
+   npm run build
+   npm publish --access public
+   ```
+3. **Update majority-apps** to use the new version:
+   ```bash
+   # In majority-apps
+   pnpm update @majority-protocol/spin-wheel
+   ```
+
+### First-time Setup
+
+```bash
+# Login to npm (one-time)
+npm login
+
+# Publish package
+npm publish --access public
+```
+
 ## Features
 
 - 30-segment wheel with values: 1-10, 20, 50, 100, 500, 1000
